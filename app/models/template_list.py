@@ -22,6 +22,10 @@ class TemplateList():
             yield item
 
     def get_templates_and_folders(self, template_type, template_folder_id, user, ancestors):
+        list(self._get_templates_and_folders(template_type, template_folder_id, user, ancestors))
+        return []
+
+    def _get_templates_and_folders(self, template_type, template_folder_id, user, ancestors):
 
         for item in self.service.get_template_folders(
             template_type, template_folder_id, user,
