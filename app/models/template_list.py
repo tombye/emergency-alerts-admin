@@ -53,7 +53,7 @@ class TemplateList():
 
     @property
     def as_id_and_name(self):
-        return [(item.id, item.name) for item in self]
+        return [(item.id, item.name) for item in self if not item.ancestors]
 
     @property
     def templates_to_show(self):
