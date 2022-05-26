@@ -82,7 +82,7 @@ def test_get_user_template_folders_only_returns_folders_visible_to_user(
 ):
     mock_get_template_folders.return_value = _get_all_folders(active_user_with_permissions)
     service = Service(service_one)
-    result = service.get_user_template_folders(User(active_user_with_permissions))
+    result = service._get_user_template_folders(User(active_user_with_permissions))
     assert result == [
         {
             'name': ["Parent 1 - invisible", "1's Visible child"],

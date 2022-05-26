@@ -1,8 +1,8 @@
 from app import format_notification_type
+from werkzeug.utils import cached_property
 
 
 class TemplateList():
-
     def __init__(
         self,
         service,
@@ -16,40 +16,114 @@ class TemplateList():
         self.user = user
 
     def __iter__(self):
-        for item in self.get_templates_and_folders(
-            self.template_type, self.template_folder_id, self.user, ancestors=[]
-        ):
-            yield item
+        yield from self.items
 
-    def get_templates_and_folders(self, template_type, template_folder_id, user, ancestors):
+    @cached_property
+    def items(self):
+        return [item for item in self.get_templates_and_folders(
+            template_folder_id=self.template_folder_id,
+            ancestors=[]
+        )]
 
-        for item in self.service.get_template_folders(
-            template_type, template_folder_id, user,
-        ):
+    def get_templates_and_folders(self, template_folder_id, ancestors=[]):
+
+        for item in self.get_template_folders(template_folder_id):
             yield TemplateListFolder(
                 item,
-                folders=self.service.get_template_folders(
-                    template_type, item['id'], user
-                ),
+                folders=self.get_template_folders(item['id']),
                 templates=self.service.get_templates(
-                    template_type, item['id']
+                    self.template_type, item['id']
                 ),
                 ancestors=ancestors,
                 service_id=self.service.id,
             )
             for sub_item in self.get_templates_and_folders(
-                template_type, item['id'], user, ancestors + [item]
+                item['id'], ancestors + [item]
             ):
                 yield sub_item
 
         for item in self.service.get_templates(
-            template_type, template_folder_id, user
+            self.template_type, template_folder_id, self.user
         ):
             yield TemplateListTemplate(
                 item,
                 ancestors=ancestors,
                 service_id=self.service.id,
             )
+
+    def is_folder_visible(self, template_folder_id):
+
+        if self.template_type == 'all':
+            return True
+
+        if self.service.get_templates(self.template_type, template_folder_id):
+            return True
+
+        if any(
+            self.is_folder_visible(child_folder['id'])
+            for child_folder in self.get_template_folders(template_folder_id)
+        ):
+            return True
+
+        return False
+
+    @cached_property
+    def user_template_folders(self):
+        """Returns a modified list of folders a user has permission to view
+
+        For each folder, we do the following:
+        - if user has no permission to view the folder, skip it
+        - if folder is visible and its parent is visible, we add it to the list of folders
+        we later return without modifying anything
+        - if folder is visible, but the parent is not, we iterate through the parent until we
+        either find a visible parent or reach root folder. On each iteration we concatenate
+        invisible parent folder name to the front of our folder name, modifying the name, and we
+        change parent_folder_id attribute to a higher level parent. This flattens the path to the
+        folder making sure it displays in the closest visible parent.
+
+        """
+        user_folders = []
+        for folder in self.service.all_template_folders:
+            if not self.user.has_template_folder_permission(folder, service=self.service):
+                continue
+            parent = self.service.get_template_folder(folder["parent_id"])
+            if self.user.has_template_folder_permission(parent, service=self.service):
+                user_folders.append(folder)
+            else:
+                folder_attrs = {
+                    "id": folder["id"], "name": folder["name"], "parent_id": folder["parent_id"],
+                    "users_with_permission": folder["users_with_permission"]
+                }
+                while folder_attrs["parent_id"] is not None:
+                    folder_attrs["name"] = [
+                        parent["name"],
+                        folder_attrs["name"],
+                    ]
+                    if parent["parent_id"] is None:
+                        folder_attrs["parent_id"] = None
+                    else:
+                        parent = self.service.get_template_folder(parent["parent_id"])
+                        folder_attrs["parent_id"] = parent.get("id", None)
+                        if self.user.has_template_folder_permission(parent, service=self.service):
+                            break
+                user_folders.append(folder_attrs)
+        return user_folders
+
+    def get_template_folders(self, parent_folder_id=None):
+        if self.user:
+            folders = self.user_template_folders
+        else:
+            folders = self.service.all_template_folders
+        if parent_folder_id:
+            parent_folder_id = str(parent_folder_id)
+
+        return [
+            folder for folder in folders
+            if (
+                folder['parent_id'] == parent_folder_id
+                and self.is_folder_visible(folder['id'])
+            )
+        ]
 
     @property
     def as_id_and_name(self):
@@ -61,10 +135,12 @@ class TemplateList():
 
     @property
     def folder_is_empty(self):
-        return not any(self.get_templates_and_folders(
-            'all', self.template_folder_id, self.user, []
+        return not any(TemplateList(
+            service=self.service,
+            template_type='all',
+            template_folder_id=self.template_folder_id,
+            user=self.user
         ))
-
 
 class TemplateLists():
 
@@ -195,7 +271,7 @@ class TemplateListService(TemplateListFolder):
             templates=service.get_templates(
                 template_folder_id=None,
             ),
-            folders=service.get_template_folders(
+            folders=service.get_template_folder_children(
                 parent_folder_id=None,
             ),
             ancestors=[],
