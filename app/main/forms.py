@@ -57,6 +57,7 @@ from app.formatters import (
     format_auth_type,
     format_thousands,
     guess_name_from_email_address,
+    message_count_noun,
 )
 from app.main.validators import (
     BroadcastLength,
@@ -1096,11 +1097,19 @@ class AdminServiceSMSAllowanceForm(StripWhitespaceForm):
 
 
 class AdminServiceMessageLimitForm(StripWhitespaceForm):
-    message_limit = GovukIntegerField(
-        "Daily message limit",
-        validators=[DataRequired(message="Cannot be empty")],
-        param_extensions={"hint": {"text": "Number of messages the service is allowed to send each day"}},
-    )
+    message_limit = GovukIntegerField("", validators=[DataRequired(message="Cannot be empty")])
+
+    def __init__(self, notification_type=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.message_limit.label.text = f"Daily {message_count_noun(1, notification_type)} limit"
+        self.message_limit.param_extensions = {
+            "hint": {
+                "text": (
+                    f"Number of {message_count_noun(999, notification_type)} the service is allowed to send each day"
+                )
+            }
+        }
 
 
 class AdminServiceRateLimitForm(StripWhitespaceForm):
