@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from flask import Flask, url_for
+from html5lib import HTMLParser
 from notifications_python_client.errors import HTTPError
 from notifications_utils.url_safe_token import generate_token
 
@@ -34,6 +35,8 @@ from . import (
     template_version_json,
     user_json,
 )
+
+html5parser = HTMLParser(strict=True)
 
 
 class ElementNotFound(Exception):
@@ -2778,7 +2781,11 @@ def client_request(_logged_in_client, mocker, service_one):  # noqa (C901 too co
             if _expected_redirect:
                 assert resp.location == _expected_redirect
 
-            page = NotifyBeautifulSoup(resp.data.decode("utf-8"), "html.parser")
+            html = resp.data.decode("utf-8")
+            page = NotifyBeautifulSoup(html, "html.parser")
+
+            if page.doctype == "html":
+                html5parser.parse(html)
 
             if _test_page_title:
                 # Page should have one H1
