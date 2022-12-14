@@ -1097,8 +1097,9 @@ class AdminServiceSMSAllowanceForm(StripWhitespaceForm):
 
 class AdminServiceMessageLimitForm(StripWhitespaceForm):
     message_limit = GovukIntegerField(
-        "Number of messages the service is allowed to send each day",
+        "Daily message limit",
         validators=[DataRequired(message="Cannot be empty")],
+        param_extensions={"hint": {"text": "Number of messages the service is allowed to send each day"}},
     )
 
 
@@ -1150,9 +1151,9 @@ class ConfirmBroadcastForm(StripWhitespaceForm):
     @staticmethod
     def generate_label(channel, max_phones):
         if channel in {"test", "operator"}:
-            return f"I understand this will alert anyone who has switched " f"on the {channel} channel"
+            return f"I understand this will alert anyone who has switched on the {channel} channel"
         if channel == "severe":
-            return f"I understand this will alert {ConfirmBroadcastForm.format_number_generic(max_phones)} " "of people"
+            return f"I understand this will alert {ConfirmBroadcastForm.format_number_generic(max_phones)} of people"
         if channel == "government":
             return (
                 f"I understand this will alert {ConfirmBroadcastForm.format_number_generic(max_phones)} "
