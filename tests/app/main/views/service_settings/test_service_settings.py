@@ -846,7 +846,7 @@ def test_should_check_for_reply_to_on_go_live(
     )
 
     mock_get_reply_to_email_addresses = mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_reply_to_email_addresses",
+        "app.main.views.service_settings.index.service_api_client.get_reply_to_email_addresses",
         return_value=reply_to_email_addresses,
     )
 
@@ -1137,7 +1137,7 @@ def test_should_check_for_sms_sender_on_go_live(
     )
 
     mock_get_sms_senders = mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_sms_senders",
+        "app.main.views.service_settings.index.service_api_client.get_sms_senders",
         return_value=sms_senders,
     )
 
@@ -1191,11 +1191,11 @@ def test_should_check_for_mou_on_request_to_go_live(
         return_value=[],
     )
     mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_sms_senders",
+        "app.main.views.service_settings.index.service_api_client.get_sms_senders",
         return_value=[],
     )
     mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_reply_to_email_addresses",
+        "app.main.views.service_settings.index.service_api_client.get_reply_to_email_addresses",
         return_value=[],
     )
     for channel in {"email", "sms", "letter"}:
@@ -1239,11 +1239,11 @@ def test_gp_without_organisation_is_shown_agreement_step(
         return_value=[],
     )
     mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_sms_senders",
+        "app.main.views.service_settings.index.service_api_client.get_sms_senders",
         return_value=[],
     )
     mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_reply_to_email_addresses",
+        "app.main.views.service_settings.index.service_api_client.get_reply_to_email_addresses",
         return_value=[],
     )
     for channel in {"email", "sms", "letter"}:
@@ -1289,11 +1289,11 @@ def test_non_gov_user_is_told_they_cant_go_live(
         return_value=[],
     )
     mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_sms_senders",
+        "app.main.views.service_settings.index.service_api_client.get_sms_senders",
         return_value=[],
     )
     mocker.patch(
-        "app.main.views.service_settings.service_api_client.get_reply_to_email_addresses",
+        "app.main.views.service_settings.index.service_api_client.get_reply_to_email_addresses",
         return_value=[],
     )
     client_request.login(api_nongov_user_active)
@@ -1565,7 +1565,7 @@ def test_should_redirect_after_request_to_go_live(
         )
     mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
-        "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
+        "app.main.views.service_settings.index.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
     )
     page = client_request.post("main.request_to_go_live", service_id=SERVICE_ONE_ID, _follow_redirects=True)
@@ -1639,7 +1639,7 @@ def test_request_to_go_live_displays_go_live_notes_in_zendesk_ticket(
     )
     mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
     mock_send_ticket_to_zendesk = mocker.patch(
-        "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
+        "app.main.views.service_settings.index.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
     )
     client_request.post("main.request_to_go_live", service_id=SERVICE_ONE_ID, _follow_redirects=True)
@@ -1710,7 +1710,7 @@ def test_request_to_go_live_displays_mou_signatories(
         ),
     )
     mocker.patch(
-        "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
+        "app.main.views.service_settings.index.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
     )
     mock_create_ticket = mocker.spy(NotifySupportTicket, "__init__")
@@ -1746,7 +1746,9 @@ def test_should_be_able_to_request_to_go_live_with_no_organisation(
             new_callable=PropertyMock,
             return_value=1,
         )
-    mock_post = mocker.patch("app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk", autospec=True)
+    mock_post = mocker.patch(
+        "app.main.views.service_settings.index.zendesk_client.send_ticket_to_zendesk", autospec=True
+    )
 
     client_request.post("main.request_to_go_live", service_id=SERVICE_ONE_ID, _follow_redirects=True)
 
@@ -3874,10 +3876,10 @@ def test_POST_email_branding_enter_government_identity_logo_text(
     mocker, client_request, service_one, extra_url_args, expected_ticket_content, expected_extra_url_args
 ):
     mock_send_ticket_to_zendesk = mocker.patch(
-        "app.main.views.service_settings.zendesk_client.send_ticket_to_zendesk",
+        "app.main.views.service_settings.index.zendesk_client.send_ticket_to_zendesk",
         autospec=True,
     )
-    mock_flash = mocker.patch("app.main.views.service_settings.flash", autospec=True)
+    mock_flash = mocker.patch("app.main.views.service_settings.index.flash", autospec=True)
 
     client_request.post(
         "main.email_branding_enter_government_identity_logo_text",
@@ -4054,9 +4056,9 @@ def test_GET_email_branding_upload_logo(
 )
 def test_POST_email_branding_upload_logo_success(mocker, client_request, service_one, email_branding_data):
     antivirus_mock = mocker.patch("app.extensions.antivirus_client.scan", return_value=True)
-    mock_upload_email_logo = mocker.patch("app.main.views.service_settings.upload_email_logo")
+    mock_upload_email_logo = mocker.patch("app.main.views.service_settings.index.upload_email_logo")
     mock_upload_email_logo.return_value = "my-logo-path"
-    mocker.patch("app.main.views.service_settings.uuid.uuid4", return_value="my-logo-uuid")
+    mocker.patch("app.main.views.service_settings.index.uuid.uuid4", return_value="my-logo-uuid")
 
     mocker.patch.dict(
         "flask.current_app.config", {"EMAIL_BRANDING_MIN_LOGO_HEIGHT_PX": 1, "EMAIL_BRANDING_MAX_LOGO_WIDTH_PX": 1}
@@ -4115,7 +4117,7 @@ def test_POST_email_branding_upload_logo_validation_errors(
     if callable(post_data):
         post_data = post_data()
 
-    mock_upload_email_logo = mocker.patch("app.main.views.service_settings.upload_email_logo")
+    mock_upload_email_logo = mocker.patch("app.main.views.service_settings.index.upload_email_logo")
 
     with mock.patch.dict("app.main.validators.current_app.config", {"ANTIVIRUS_ENABLED": False}):
         page = client_request.post(
@@ -4140,7 +4142,7 @@ def test_POST_email_branding_upload_logo_validation_errors(
 def test_POST_email_branding_upload_logo_enforces_minimum_logo_height(
     mocker, client_request, service_one, min_logo_height, expect_error
 ):
-    mocker.patch("app.main.views.service_settings.upload_email_logo")
+    mocker.patch("app.main.views.service_settings.index.upload_email_logo")
     mocker.patch("app.utils.image_processing.ImageProcessor")
 
     with mock.patch.dict(
@@ -4163,7 +4165,7 @@ def test_POST_email_branding_upload_logo_enforces_minimum_logo_height(
 
 
 def test_POST_email_branding_upload_logo_resizes_and_pads_wide_short_logo(mocker, client_request, service_one):
-    mocker.patch("app.main.views.service_settings.upload_email_logo")
+    mocker.patch("app.main.views.service_settings.index.upload_email_logo")
     mock_image_processor = mocker.patch("app.main.forms.ImageProcessor")
     mock_image_processor().height = ComparablePropertyMock(side_effect=[26, 13])
     mock_image_processor().width = 100
@@ -4290,7 +4292,7 @@ def test_POST_email_branding_set_alt_text_creates_branding_adds_to_pool_and_redi
     brand_type,
     expected_name,
 ):
-    mock_flash = mocker.patch("app.main.views.service_settings.flash")
+    mock_flash = mocker.patch("app.main.views.service_settings.index.flash")
     mock_add_to_branding_pool = mocker.patch(
         "app.organisations_client.add_brandings_to_email_branding_pool", return_value=None
     )
@@ -4774,7 +4776,7 @@ def test_archive_service_after_confirm(
 ):
     service_one["restricted"] = is_trial_service
     mock_api = mocker.patch("app.service_api_client.post")
-    mock_event = mocker.patch("app.main.views.service_settings.create_archive_service_event")
+    mock_event = mocker.patch("app.main.views.service_settings.index.create_archive_service_event")
     redis_delete_mock = mocker.patch("app.notify_client.service_api_client.redis_client.delete")
     mocker.patch("app.notify_client.service_api_client.redis_client.delete_by_pattern")
 
@@ -5889,7 +5891,9 @@ def test_service_confirm_broadcast_account_type_posts_data_to_api_and_redirects(
     mock_get_users_by_service,
 ):
     set_service_broadcast_settings_mock = mocker.patch("app.service_api_client.set_service_broadcast_settings")
-    mock_event_handler = mocker.patch("app.main.views.service_settings.create_broadcast_account_type_change_event")
+    mock_event_handler = mocker.patch(
+        "app.main.views.service_settings.index.create_broadcast_account_type_change_event"
+    )
 
     client_request.login(platform_admin_user)
     client_request.post(
@@ -5925,7 +5929,9 @@ def test_service_confirm_broadcast_account_type_errors_for_unknown_type(
     account_type,
 ):
     set_service_broadcast_settings_mock = mocker.patch("app.service_api_client.set_service_broadcast_settings")
-    mock_event_handler = mocker.patch("app.main.views.service_settings.create_broadcast_account_type_change_event")
+    mock_event_handler = mocker.patch(
+        "app.main.views.service_settings.index.create_broadcast_account_type_change_event"
+    )
 
     client_request.login(platform_admin_user)
     client_request.post(

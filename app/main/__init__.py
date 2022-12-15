@@ -35,7 +35,6 @@ from app.main.views import (  # noqa isort:skip
     returned_letters,
     security_policy,
     send,
-    service_settings,
     sign_in,
     sign_out,
     templates,
@@ -45,4 +44,7 @@ from app.main.views import (  # noqa isort:skip
     user_profile,
     verify,
     webauthn_credentials,
+)
+from app.main.views.service_settings import (  # noqa isort:skip
+    index,
 )
