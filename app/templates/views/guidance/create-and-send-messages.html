@@ -11,16 +11,18 @@
 
 {% block content_column_content %}
 
-  <h1 class="heading-large">Send messages</h1>
+  <h1 class="heading-large">Send messages in bulk</h1>
 
-  <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="{{ url_for('main.register') }}">Create an account</a> to see a short tutorial explaining how to create and send messages.</p>
-
-  <h2 class="heading-medium" id="bulk-sending">Bulk sending</h2>
+  <p class="govuk-body">You can send a batch of emails, text messages and letters. </p>
+<p class="govuk-body">Send up to 100,000 emails or text messages in one go. The daily limit for sending emails or text messages is 250,000. </p>
+<p class="govuk-body">Send up to 25,000 letters a day in one go. <a href="https://www.notifications.service.gov.uk/support">Contact us</a> if you need to send more.</p>
 
   <p class="govuk-body">To send a batch of messages at once:</p>
   <ol class="govuk-list govuk-list--number">
-    <li>Go to the {{ service_link(current_service, 'main.choose_template', 'templates') }} page and choose an existing template.</li>
-    <li>Select <b class="govuk-!-font-weight-bold">Send</b>.</li>
-    <li>If you’re sending emails, select <b class="govuk-!-font-weight-bold">Upload a list of email addresses</b>. If you’re sending text messages, select <b class="govuk-!-font-weight-bold">Upload a list of phone numbers</b>. If you’re sending letters, select <b class="govuk-!-font-weight-bold">Upload a list of addresses</b>.</li>
+    <li>Go to the {{ service_link(current_service, 'main.choose_template', 'templates') }} page.</li>
+    <li>Add a new template or choose an existing template and select<b class="govuk-!-font-weight-bold">Get ready to send</b>.</li>
+    <li>Select <b class="govuk-!-font-weight-bold">Upload a list of email addresses</b>, <b class="govuk-!-font-weight-bold">Upload a list of phone numbers</b> or <b class="govuk-!-font-weight-bold">Upload a list of addresses</b>.</li></ol>
+
+<p class="govuk-body">You can also choose when to send your messages. Find out [more about scheduling messages].</p>
 
   {% endblock %}
