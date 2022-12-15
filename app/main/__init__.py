@@ -47,4 +47,5 @@ from app.main.views import (  # noqa isort:skip
 )
 from app.main.views.service_settings import (  # noqa isort:skip
     index,
+    letter_branding,
 )
